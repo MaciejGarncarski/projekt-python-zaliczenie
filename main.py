@@ -9,9 +9,10 @@ import ctypes
 from constants import app_title
 from login import LoginFTPWidget
 
-# ustawia ikonkę aplikacji na windowsie
+# ustawia ikonkę aplikacji na systemie Windows,
+# poprzez ustawienie własnego identyfikatora aplikacji
 if os.name == 'nt':
-    myappid = 'maciejgarncarski.projektFTP.WdP.1.0'  # arbitrary string
+    myappid = 'maciejgarncarski.projektFTP.WdP.1.0'
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
 class MainWindow(QMainWindow):
@@ -19,7 +20,7 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
         self.setWindowTitle(app_title)
         pixmap = QPixmap()
-        pixmap.loadFromData(Path("ftp.jpeg").read_bytes() )
+        pixmap.loadFromData(Path("logo.png").read_bytes() )
         app_icon = QIcon(pixmap)
         self.is_loading = False
         self.setWindowIcon(app_icon)
