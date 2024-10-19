@@ -1,6 +1,6 @@
 from pathlib import Path
 from PyQt6.QtGui import QIcon, QPixmap
-from PyQt6.QtWidgets import QApplication, QMainWindow, QStackedWidget
+from PyQt6.QtWidgets import QApplication, QMainWindow
 import sys
 
 import os
@@ -9,31 +9,29 @@ import ctypes
 from constants import app_title
 from login import LoginFTPWidget
 
-app = QApplication(sys.argv)
-
-## ustawia ikonkę aplikacji na windowsie
+# ustawia ikonkę aplikacji na windowsie
 if os.name == 'nt':
     myappid = 'maciejgarncarski.projektFTP.WdP.1.0'  # arbitrary string
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
 class MainWindow(QMainWindow):
     def __init__(self):
-        super().__init__()
+        super(MainWindow, self).__init__()
         self.setWindowTitle(app_title)
         pixmap = QPixmap()
         pixmap.loadFromData(Path("ftp.jpeg").read_bytes() )
         app_icon = QIcon(pixmap)
+        self.is_loading = False
         self.setWindowIcon(app_icon)
         self.setFixedSize(400, 400)
-        self.central_widget = QStackedWidget(self)
-        self.setCentralWidget(self.central_widget)
-        self.setCentralWidget(LoginFTPWidget())
+        self.login_ui = LoginFTPWidget()
+        self.start_login_ui()
 
-        login_widget = LoginFTPWidget(self)
-        self.central_widget.addWidget(login_widget)
-
-window = MainWindow()
-window.show()
+    def start_login_ui(self):
+        self.login_ui.init_ui(self)
+        self.show()
 
 if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    window = MainWindow()
     sys.exit(app.exec())
