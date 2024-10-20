@@ -1,8 +1,8 @@
 from pathlib import Path
 from PyQt6.QtGui import QIcon, QPixmap
 from PyQt6.QtWidgets import QApplication, QMainWindow
-import sys
 
+import sys
 import os
 import ctypes
 

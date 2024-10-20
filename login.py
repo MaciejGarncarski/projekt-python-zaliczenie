@@ -51,8 +51,8 @@ class LoginFTPWidget(QWidget):
         )
 
     def init_bottom_ui(self):
-        save_login_data = QCheckBox()
-        save_login_data.setText("Zapisz dane logowania")
+        self.save_login_data_checkbox = QCheckBox()
+        self.save_login_data_checkbox.setText("Zapisz dane logowania")
 
         default_settings_text = QLabel(default_ftp_settings_description)
         default_settings_text.setTextInteractionFlags(
@@ -71,13 +71,12 @@ class LoginFTPWidget(QWidget):
         self.button_box.addWidget(select_login_data)
         self.button_box.addWidget(login_button)
 
-        self.bottom_box.addWidget(save_login_data)
+        self.bottom_box.addWidget(self.save_login_data_checkbox)
         self.bottom_box.addLayout(self.button_box)
         self.bottom_box.addWidget(default_settings_text)
         self.main_layout.addLayout(self.bottom_box)
 
     def init_ui(self, MainWindow):
-        self.setWindowTitle("Połącz się z serwerem FTP")
         self.setWindowTitle("Połącz się z serwerem FTP")
 
         form_box = QFormLayout()
@@ -109,16 +108,19 @@ class LoginFTPWidget(QWidget):
 
     def login_ftp(self):
         if self.error_message is not None:
-            self.bottom_box.removeItem(self, self.bottom_box.itemAt(0))
+            self.error_message.setParent(None)
 
         try:
+            if self.save_login_data_checkbox.isChecked():
+                self.save_login_data()
+            
             ftp = FTP(timeout=4)
             ftp.connect(host=self.host.get_text(), port=int(self.port.get_text()))
             ftp.login(user=self.user.get_text(), passwd=self.password.get_text())
             print("path", ftp.pwd())
 
         except all_errors as error:
-            error_code = error.args[0][:3]
+            error_code = error[0][:3] if isinstance(error, str) else None
             self.error_message = QLabel("Nie udało się połączyć z serwerem.")
             self.error_message.setStyleSheet("color: red; font-weight: semi-bold;")
             self.error_message.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -142,6 +144,21 @@ class LoginFTPWidget(QWidget):
         self.user.set_text(user)
         self.password.set_text(password)
 
+    def save_login_data(self):
+        conn = sqlite3.connect("database.sqlite")
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+        INSERT INTO login_data (host, user, port, password) VALUES (?, ?, ?, ?)
+        """,
+            (
+                self.host.get_text(),
+                self.user.get_text(),
+                int(self.port.get_text()),
+                self.password.get_text(),
+            ),
+        )
+        conn.commit()
 
 class SelectLoginInformation(QDialog):
     def __init__(self, ftp_widget):
@@ -159,7 +176,7 @@ class SelectLoginInformation(QDialog):
 
         self.conn = sqlite3.connect("database.sqlite")
         self.cursor = self.conn.cursor()
-        self.rows = None
+        self.fetched_items = None
 
         self.create_items()
 
@@ -177,8 +194,8 @@ class SelectLoginInformation(QDialog):
            """
         )
 
-        self.rows = cursor.fetchall()
-        for itemId, host, user, port, password in self.rows:
+        self.fetched_items = cursor.fetchall()
+        for itemId, host, user, port, password in self.fetched_items:
             login_data = (itemId, host, port, user, password)
 
             login_data = LoginInformationItem(
@@ -197,24 +214,27 @@ class LoginInformationItem(QWidget):
         parent=None,
     ):
         super().__init__(parent)
-        item_layout = QHBoxLayout()
         itemId, host, port, user, password = login_data
-        self.label = QLabel(f"{user}@{host}:{port}")
-        item_layout.addWidget(self.label)
+        self.set_form_values = set_form_values
         self.setObjectName(f"item-{itemId}")
-        self.delete_button = QPushButton("Usuń")
-        self.select_button = QPushButton("Wybierz")
-        item_layout.addWidget(self.delete_button)
-        item_layout.addWidget(self.select_button)
-        self.delete_button.setFixedWidth(50)
-        self.select_button.setFixedWidth(100)
 
-        self.delete_button.clicked.connect(lambda: self.delete_item(itemId))
-        self.select_button.clicked.connect(
+        item_layout = QHBoxLayout()
+        login_label = QLabel(f"{user}@{host}:{port}")
+        delete_button = QPushButton("Usuń")
+        select_button = QPushButton("Wybierz")
+
+        item_layout.addWidget(login_label)
+        item_layout.addWidget(delete_button)
+        item_layout.addWidget(select_button)
+
+        delete_button.setFixedWidth(50)
+        select_button.setFixedWidth(100)
+
+        delete_button.clicked.connect(lambda: self.delete_item(itemId))
+        select_button.clicked.connect(
             lambda: self.select_item(host, port, user, password)
         )
 
-        self.set_form_values = set_form_values
         self.setLayout(item_layout)
 
     def delete_item(self, itemId):
