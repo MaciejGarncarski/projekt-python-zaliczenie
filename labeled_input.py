@@ -18,5 +18,8 @@ class LabeledInput(QWidget):
 
         form_box.addRow(self.label, self.input_field)
 
+    def set_text(self, text):
+        self.input_field.setText(text)
+
     def get_text(self):
         return self.input_field.text()

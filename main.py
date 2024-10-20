@@ -22,7 +22,6 @@ class MainWindow(QMainWindow):
         pixmap = QPixmap()
         pixmap.loadFromData(Path("logo.png").read_bytes() )
         app_icon = QIcon(pixmap)
-        self.is_loading = False
         self.setWindowIcon(app_icon)
         self.setFixedSize(400, 400)
         self.login_ui = LoginFTPWidget()
@@ -31,6 +30,10 @@ class MainWindow(QMainWindow):
     def start_login_ui(self):
         self.login_ui.init_ui(self)
         self.show()
+
+    def closeEvent(self, event):
+        event.accept()
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
