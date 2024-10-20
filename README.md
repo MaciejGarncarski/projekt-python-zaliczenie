@@ -1,7 +1,7 @@
 # Klient FTP - Projekt na zalicznie z przedmiotu "Wstęp do Programowania"
 
 # UWAGA!
-Używana przez projekt biblioteka PyQt6 wspiera systemy Linux, macOS i conajmniej `Windows 10`.
+## Używana przez projekt biblioteka PyQt6 wspiera systemy: Windows 10/11, Linux i macOS.
 
 # Uruchomienie projektu
 Podane komendy należy uruchomić w katalogu projektu.
@@ -12,7 +12,7 @@ python3 -m pip install PyQt6 # instaluje potrzebną bibliotekę
 python3 main.py # uruchamia aplikację
 ```
 
-## Windows
+## Windows 10/11
 ```sh
 py -m pip install --upgrade pip # aktualizacja instalatora pakietów
 py -m pip install PyQt6 # instaluje potrzebną 
