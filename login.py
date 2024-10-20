@@ -18,7 +18,6 @@ from constants import (
 )
 from PyQt6.QtCore import Qt
 
-from database import connect_to_database
 from labeled_input import LabeledInput
 from utils import delete_items_of_layout
 
