@@ -1,7 +1,15 @@
 from PyQt6.QtWidgets import QWidget, QLineEdit, QLabel
 
+
 class LabeledInput(QWidget):
-    def __init__(self, placeholder="Tytuł", form_box=None, is_password=False, default_text=None, parent=None):
+    def __init__(
+        self,
+        placeholder="Tytuł",
+        form_box=None,
+        is_password=False,
+        default_text=None,
+        parent=None,
+    ):
         super().__init__(parent)
 
         self.label = QLabel(placeholder + ":")

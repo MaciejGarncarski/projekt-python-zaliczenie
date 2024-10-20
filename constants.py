@@ -19,5 +19,5 @@ Testowy serwer FTP:
 
 ftp_connection_errors = {
     "530": "Nieprawidłowe dane logowania.",
-    "434": "Host nieosiągalny."
+    "434": "Host nieosiągalny.",
 }

@@ -11,16 +11,17 @@ from login import LoginFTPWidget
 
 # ustawia ikonkę aplikacji na systemie Windows,
 # poprzez ustawienie własnego identyfikatora aplikacji
-if os.name == 'nt':
-    myappid = 'maciejgarncarski.projektFTP.WdP.1.0'
+if os.name == "nt":
+    myappid = "maciejgarncarski.projektFTP.WdP.1.0"
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         self.setWindowTitle(app_title)
         pixmap = QPixmap()
-        pixmap.loadFromData(Path("logo.png").read_bytes() )
+        pixmap.loadFromData(Path("logo.png").read_bytes())
         app_icon = QIcon(pixmap)
         self.setWindowIcon(app_icon)
         self.setFixedSize(400, 400)
@@ -35,7 +36,7 @@ class MainWindow(QMainWindow):
         event.accept()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MainWindow()
     sys.exit(app.exec())
