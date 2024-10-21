@@ -1,5 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QLineEdit, QLabel
-
+from PyQt5.QtWidgets import QWidget, QLineEdit, QLabel
 
 class LabeledInput(QWidget):
     def __init__(

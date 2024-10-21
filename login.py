@@ -1,5 +1,5 @@
 import sqlite3
-from PyQt6.QtWidgets import (
+from PyQt5.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QFormLayout,
@@ -10,13 +10,13 @@ from PyQt6.QtWidgets import (
     QDialog,
     QScrollArea,
 )
+from PyQt5.QtCore import Qt
 from ftplib import FTP, all_errors
 from constants import (
     default_ftp_settings,
     ftp_connection_errors,
     default_ftp_settings_description,
 )
-from PyQt6.QtCore import Qt
 
 from labeled_input import LabeledInput
 from utils import delete_items_of_layout
@@ -120,7 +120,7 @@ class LoginFTPWidget(QWidget):
             print("path", ftp.pwd())
 
         except all_errors as error:
-            error_code = error[0][:3] if isinstance(error, str) else None
+            error_code = error[0][:3] if isinstance(int(error[0][:3]), int) else None
             self.error_message = QLabel("Nie udało się połączyć z serwerem.")
             self.error_message.setStyleSheet("color: red; font-weight: semi-bold;")
             self.error_message.setAlignment(Qt.AlignmentFlag.AlignCenter)
