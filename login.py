@@ -28,6 +28,7 @@ class LoginFTPWidget(QWidget):
         self.main_layout = QVBoxLayout()
         self.bottom_box = QVBoxLayout()
         self.button_box = QHBoxLayout()
+        self.save_login_data_checkbox = None
         self.host = None
         self.port = None
         self.user = None
@@ -35,7 +36,8 @@ class LoginFTPWidget(QWidget):
         self.error_message = None
         self.prepare_database()
 
-    def prepare_database(self):
+    @staticmethod
+    def prepare_database():
         conn = sqlite3.connect("database.sqlite")
         cursor = conn.cursor()
         cursor.execute(
