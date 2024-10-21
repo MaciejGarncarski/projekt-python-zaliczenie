@@ -6,7 +6,7 @@ default_ftp_settings = {
     "host": "ftp.maciej-garncarski.pl",
     "port": "21",
     "user": "testowy",
-    "password": "test1223",
+    "password": "test123",
 }
 
 default_ftp_settings_description = f"""
