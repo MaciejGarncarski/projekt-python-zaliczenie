@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import (
     QHBoxLayout,
     QDialog,
     QScrollArea,
+    QMessageBox,
 )
 from PyQt5.QtCore import Qt
 from ftplib import FTP, all_errors
@@ -116,29 +117,31 @@ class LoginFTPWidget(QWidget):
             self.error_message.setParent(None)
 
         try:
-            if self.save_login_data_checkbox.isChecked():
-                self.save_login_data()
-
+            ftp_client.disconnect()
             ftp_client.connect(
                 host=self.host.get_text(),
                 port=int(self.port.get_text()),
                 user=self.user.get_text(),
                 password=self.password.get_text(),
             )
-            print("path")
-            ftp_client.pwd()
+
+            if self.save_login_data_checkbox.isChecked():
+                self.save_login_data()
+
             self.parent().parent().start_server_ui()
 
         except all_errors as error:
             error_message = str(error)
             try:
-                error_code = error_message[0][:3]
+                error_code = error_message[:3]
                 self.error_message = QLabel("Nie udało się połączyć z serwerem.")
                 self.error_message.setStyleSheet("color: red; font-weight: semi-bold;")
                 self.error_message.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
                 if ftp_connection_errors.get(error_code):
-                    self.error_message.setText(ftp_connection_errors.get(error_code))
+                    self.error_message.setText(
+                        f"Błąd.\n{ftp_connection_errors.get(error_code)}"
+                    )
                 else:
                     self.error_message.setText(
                         f"Nie udało się połączyć z serwerem.\nBłąd: {error_message}"
@@ -183,7 +186,7 @@ class SelectLoginInformation(QDialog):
     def __init__(self, ftp_widget):
         super().__init__()
         self.setWindowTitle("Wybierz dane połączenia")
-        self.setFixedSize(600, 400)
+        self.setFixedSize(500, 300)
         self.setObjectName("SelectLoginInformationDialog")
         scroll_area = QScrollArea(self)
         scroll_area.setWidgetResizable(True)
@@ -223,6 +226,7 @@ class SelectLoginInformation(QDialog):
                 parent=self.content_widget,
             )
             self.content_layout.addWidget(login_data)
+        self.content_layout.addStretch()
 
 
 class LoginInformationItem(QWidget):
@@ -249,24 +253,46 @@ class LoginInformationItem(QWidget):
         delete_button.setFixedWidth(50)
         select_button.setFixedWidth(100)
 
-        delete_button.clicked.connect(lambda: self.delete_item(itemId))
+        delete_button.clicked.connect(
+            lambda: self.delete_item(itemId, host, port, user)
+        )
         select_button.clicked.connect(
             lambda: self.select_item(host, port, user, password)
         )
 
         self.setLayout(item_layout)
 
-    def delete_item(self, itemId):
-        conn = sqlite3.connect("database.sqlite")
-        cursor = conn.cursor()
-        cursor.execute(
-            """
-        DELETE FROM login_data WHERE itemId = ?
-        """,
-            (itemId,),
+    def delete_item(self, itemId, host, port, user):
+        message_box = QMessageBox()
+        message_box.setIcon(QMessageBox.Warning)
+        message_box.setWindowTitle("Usuwanie danych połączenia")
+        message_box.setText(
+            f"Czy na pewno chcesz usunąć dane połączenia?\n{user}@{host}:{port}"
         )
-        conn.commit()
-        self.parent().parent().findChild(QWidget, f"item-{itemId}").setParent(None)
+        message_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        button_yes = message_box.button(QMessageBox.Yes)
+        button_yes.setText("Usuń")
+        button_no = message_box.button(QMessageBox.No)
+        button_no.setText("Anuluj")
+
+        message_box.setDefaultButton(QMessageBox.No)
+
+        if message_box.clickedButton() == QMessageBox.No:
+            message_box.close()
+
+        if message_box.clickedButton() == QMessageBox.Yes:
+            conn = sqlite3.connect("database.sqlite")
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+            DELETE FROM login_data WHERE itemId = ?
+            """,
+                (itemId,),
+            )
+            conn.commit()
+            self.parent().parent().findChild(QWidget, f"item-{itemId}").setParent(None)
+
+        message_box.exec_()
 
     def select_item(self, host=None, port=None, user=None, password=None):
         self.set_form_values(host, str(port), user, password)

@@ -9,8 +9,7 @@ default_ftp_settings = {
     "password": "test123",
 }
 
-default_ftp_settings_description = f"""
-Testowy serwer FTP:
+default_ftp_settings_description = f"""Testowy serwer FTP:
   - host: {default_ftp_settings["host"]}
   - port: {default_ftp_settings["port"]}
   - użytkownik: {default_ftp_settings["user"]}

@@ -1,5 +1,4 @@
-# fix error handling in login.py
-# add file tree with navigation
-# add file download
-# add file upload
-# add file deletion
+# add file tree with navigation, grid layout, refresh on upload, delete
+# add file download, download progress bar
+# add file upload, add pwd to upload path, upload progress bar
+# add file deletion, update file tree
