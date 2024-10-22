@@ -5,7 +5,7 @@ Pobieranie plików projektu: https://codeload.github.com/MaciejGarncarski/projek
 
 Podane komendy należy uruchomić w katalogu projektu.
 
-## Instalacja wymaganych bibliotek
+## Instalacja biblioteki do GUI i aktywacja środowiska wirtualnego
 ### Windows
 ```sh
 py -m venv .venv
