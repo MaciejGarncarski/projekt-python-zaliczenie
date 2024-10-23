@@ -45,11 +45,13 @@ class MainWindow(QMainWindow):
         self.start_login_ui()
 
     def start_login_ui(self):
+        self.setFixedSize(400, 400)
         self.login_ui = LoginFTPWidget(self)
         self.central_widget.addWidget(self.login_ui)
         self.central_widget.setCurrentWidget(self.login_ui)
 
     def start_server_ui(self):
+        self.setFixedSize(500, 500)
         self.server_ui = ServerWidget(self)
         self.central_widget.addWidget(self.server_ui)
         self.central_widget.setCurrentWidget(self.server_ui)

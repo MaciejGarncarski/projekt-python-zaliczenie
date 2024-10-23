@@ -1,4 +1,5 @@
 from ftplib import FTP
+from utils import is_directory, convert_size
 
 
 class ReusableFTP:
@@ -13,11 +14,8 @@ class ReusableFTP:
         self.ftp = FTP()
         self.ftp.connect(host=self.host, port=self.port)
         self.ftp.login(user=self.user, passwd=self.password)
-        print(f"Reconnected to {self.host}:{self.port}")
 
     def connect(self, host=None, port=None, user=None, password=None):
-        print(host, port, user, password)
-
         if self.ftp is None or not self.ftp.sock:
             self.ftp = FTP()
             self.ftp.connect(host=host, port=port)
@@ -27,8 +25,6 @@ class ReusableFTP:
             self.user = user
             self.password = password
             self.port = port
-
-            print(f"Connected to {host}:{port}")
 
     def sign_out(self):
         if self.ftp:
@@ -44,28 +40,45 @@ class ReusableFTP:
         if self.ftp:
             self.ftp.quit()
             self.ftp = None
-            print("Disconnected")
 
     def upload_file(self, file_path, remote_path, callback):
-        self.reconnect()
         with open(file_path, "rb") as file:
             self.ftp.storbinary(f"STOR {remote_path}", file, 8192, callback)
-        print(f"Uploaded {file_path} to {remote_path}")
-        self.disconnect()
+        print('upload')
 
     def download_file(self, remote_path, file_path):
-        self.reconnect()
         with open(file_path, "wb") as file:
             self.ftp.retrbinary(f"RETR {remote_path}", file.write)
-        print(f"Downloaded {remote_path} to {file_path}")
-        self.disconnect()
 
     def list_files(self, directory="."):
-        self.reconnect()
         files = self.ftp.nlst(directory)
-        print(f"Files in {directory}: {files}")
-        self.disconnect()
-        return files
+        file_list = []
+
+        for file_name in files:
+            formatted_file_name = file_name if directory is '.' else file_name.replace(directory + "/", '', 1)
+
+            if is_directory(self.ftp, file_name):
+                file_list.append((formatted_file_name, '-', '-'))
+                continue
+
+            self.ftp.sendcmd("TYPE i")
+            timestamp = self.ftp.voidcmd(f"MDTM {file_name}")[4:].strip()
+            year = timestamp[:4]
+            month = timestamp[4:6]
+            day = timestamp[6:8]
+            hour = timestamp[8:10]
+            minute = timestamp[10:12]
+            second = timestamp[12:14]
+            file_date = f"{year}-{month}-{day} {hour}:{minute}:{second}"
+            file_size_bytes = self.ftp.size(file_name)
+            file_formatted_size = convert_size(file_size_bytes)
+            file_data = (formatted_file_name, file_formatted_size, file_date)
+            file_list.append(file_data)
+
+        return file_list
+
+    def cwd(self, path):
+        self.ftp.cwd(path)
 
     def get_path(self):
         return self.ftp.pwd()
