@@ -9,14 +9,13 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QPushButton,
 )
-from ftplib import FTP
 
 import sys
 import os
 import ctypes
 
 from constants import app_title
-from ftp import ReusableFTP
+from ftp import ReusableFTP, ftp_client
 from login import LoginFTPWidget
 from server import ServerWidget
 from utils import delete_items_of_layout

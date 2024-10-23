@@ -1,6 +1,6 @@
 from ftplib import FTP
 from utils import is_directory, convert_size
-
+from datetime import  datetime
 
 class ReusableFTP:
     def __init__(self):
@@ -44,7 +44,7 @@ class ReusableFTP:
     def upload_file(self, file_path, remote_path, callback):
         with open(file_path, "rb") as file:
             self.ftp.storbinary(f"STOR {remote_path}", file, 8192, callback)
-        print('upload')
+        print("upload")
 
     def download_file(self, remote_path, file_path):
         with open(file_path, "wb") as file:
@@ -55,21 +55,20 @@ class ReusableFTP:
         file_list = []
 
         for file_name in files:
-            formatted_file_name = file_name if directory is '.' else file_name.replace(directory + "/", '', 1)
+            formatted_file_name = (
+                file_name
+                if directory is "."
+                else file_name.replace(directory + "/", "", 1)
+            )
 
             if is_directory(self.ftp, file_name):
-                file_list.append((formatted_file_name, '-', '-'))
+                file_list.append((formatted_file_name, "-", "-"))
                 continue
 
             self.ftp.sendcmd("TYPE i")
             timestamp = self.ftp.voidcmd(f"MDTM {file_name}")[4:].strip()
-            year = timestamp[:4]
-            month = timestamp[4:6]
-            day = timestamp[6:8]
-            hour = timestamp[8:10]
-            minute = timestamp[10:12]
-            second = timestamp[12:14]
-            file_date = f"{year}-{month}-{day} {hour}:{minute}:{second}"
+            dt = datetime.strptime(timestamp, "%Y%m%d%H%M%S")
+            file_date = datetime.strftime(dt, "%Y-%m-%d %H:%M:%S")
             file_size_bytes = self.ftp.size(file_name)
             file_formatted_size = convert_size(file_size_bytes)
             file_data = (formatted_file_name, file_formatted_size, file_date)
