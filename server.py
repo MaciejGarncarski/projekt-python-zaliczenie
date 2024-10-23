@@ -1,5 +1,3 @@
-from time import sleep
-
 from PyQt5.QtCore import QTimer, QSize
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (
@@ -32,6 +30,7 @@ class ServerWidget(QWidget):
         self.file_tree_header = self.file_tree_box.header()
         self.file_tree_box.setColumnWidth(0, 200)
         self.file_tree_box.setColumnWidth(1, 130)
+        self.file_tree_box.setHeaderLabels(["Nazwa", "Rozmiar", "Data modyfikacji"])
 
         self.file_tree_box.setIconSize(QSize(24, 24))
         self.file_tree_box.itemDoubleClicked.connect(self.on_item_clicked)
@@ -65,19 +64,29 @@ class ServerWidget(QWidget):
 
         self.show_file_tree(".")
 
+    # def show_file_tree(self, directory="."):
+    #     def init_file_tree():
+    #         clear_tree_widget(self.file_tree_box)
+    #         self.file_tree_box.setHeaderLabels(["Nazwa", "Rozmiar", "Data modyfikacji"])
+    #         file_list = ftp_client.list_files(directory)
+    #
+    #
+    #         for file_name, file_size, file_date in file_list:
+    #             file_item = FileItemWidget(
+    #                 self.file_tree_box, file_name, file_size, file_date
+    #             )
+    #             self.file_tree_box.addTopLevelItem(file_item)
+    #
+    #     defer_ui_change(init_file_tree)
+
     def show_file_tree(self, directory="."):
-        def init_file_tree():
-            clear_tree_widget(self.file_tree_box)
-            self.file_tree_box.setHeaderLabels(["Nazwa", "Rozmiar", "Data modyfikacji"])
-            file_list = ftp_client.list_files(directory)
-
-            for file_name, file_size, file_date in file_list:
-                file_item = FileItemWidget(
-                    self.file_tree_box, file_name, file_size, file_date
-                )
-                self.file_tree_box.addTopLevelItem(file_item)
-
-        defer_ui_change(init_file_tree)
+        clear_tree_widget(self.file_tree_box)
+        file_list = ftp_client.list_files(directory)
+        for file_name, file_size, file_date in file_list:
+            file_item = FileItemWidget(
+                self.file_tree_box, file_name, file_size, file_date
+            )
+            self.file_tree_box.addTopLevelItem(file_item)
 
     def navigate_back(self):
         if self.current_path.directory_path != "/":
@@ -133,7 +142,7 @@ class FileUploadWidget(QWidget):
         self.select_file_dialog.setFileMode(QFileDialog.FileMode.ExistingFiles)
         self.select_file_dialog.setViewMode(QFileDialog.Detail)
         current_path = self.parent().current_path.directory_path
-        remote_path = current_path if current_path is '/' else current_path + '/'
+        remote_path = current_path if current_path == '/' else current_path + '/'
 
         if self.select_file_dialog.exec_():
             file_names = self.select_file_dialog.selectedFiles()

@@ -5,3 +5,5 @@
 # fix login error
 # add top row with back, refetch, and home buttons
 # add dialog on delete, upload
+
+# fix performance issues on navigation back

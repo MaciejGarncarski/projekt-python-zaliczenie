@@ -1,6 +1,7 @@
 from ftplib import FTP
 from utils import is_directory, convert_size
 from datetime import  datetime
+import time
 
 class ReusableFTP:
     def __init__(self):
@@ -55,26 +56,33 @@ class ReusableFTP:
         file_list = []
 
         for file_name in files:
-            formatted_file_name = (
-                file_name
-                if directory is "."
-                else file_name.replace(directory + "/", "", 1)
-            )
-
-            if is_directory(self.ftp, file_name):
-                file_list.append((formatted_file_name, "-", "-"))
-                continue
-
-            self.ftp.sendcmd("TYPE i")
-            timestamp = self.ftp.voidcmd(f"MDTM {file_name}")[4:].strip()
-            dt = datetime.strptime(timestamp, "%Y%m%d%H%M%S")
-            file_date = datetime.strftime(dt, "%Y-%m-%d %H:%M:%S")
-            file_size_bytes = self.ftp.size(file_name)
-            file_formatted_size = convert_size(file_size_bytes)
-            file_data = (formatted_file_name, file_formatted_size, file_date)
+            start = time.time()
+            file_data = self.get_file_data(file_name, directory)
             file_list.append(file_data)
+            end = time.time()
+            print(end - start)
 
         return file_list
+
+    def get_file_data(self, file_name, directory):
+        formatted_file_name = (
+            file_name
+            if directory == "."
+            else file_name.replace(directory + "/", "", 1)
+        )
+
+        if is_directory(self.ftp, file_name):
+            return formatted_file_name, "-", "-"
+
+        self.ftp.sendcmd("TYPE i")
+        timestamp = self.ftp.voidcmd(f"MDTM {file_name}")[4:].strip()
+        dt = datetime.strptime(timestamp, "%Y%m%d%H%M%S")
+        file_date = datetime.strftime(dt, "%Y-%m-%d %H:%M:%S")
+        file_size_bytes = self.ftp.size(file_name)
+        file_formatted_size = convert_size(file_size_bytes)
+        file_data = (formatted_file_name, file_formatted_size, file_date)
+
+        return file_data
 
     def cwd(self, path):
         self.ftp.cwd(path)
