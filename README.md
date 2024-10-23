@@ -1,11 +1,15 @@
 # Klient FTP - Projekt na zalicznie z przedmiotu <br/> "Wstęp do Programowania"
 
+---
+
 # Uruchamianie projektu
-Pobieranie plików projektu: https://codeload.github.com/MaciejGarncarski/projekt-python-zaliczenie/zip/refs/heads/master
 
-Podane komendy należy uruchomić w katalogu projektu.
+## Podane komendy należy uruchomić w katalogu projektu.
 
-## Instalacja biblioteki do GUI i aktywacja środowiska wirtualnego
+## 1. Pobieranie plików projektu: https://codeload.github.com/MaciejGarncarski/projekt-python-zaliczenie/zip/refs/heads/master lub sklonowanie repozytorium git
+
+## 2. Instalacja biblioteki do GUI i aktywacja środowiska wirtualnego
+
 ### Windows
 ```sh
 py -m venv .venv
@@ -22,7 +26,7 @@ python3 -m pip install --upgrade pip
 python3 -m pip install PyQt5
 ```
 
-## Uruchomienie projektu
+## 3. Uruchomienie aplikacji
 ### Windows
 ```sh
 .venv\Scripts\activate.bat
