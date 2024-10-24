@@ -1,9 +1,0 @@
-# add file tree with navigation, grid layout, refresh on upload, delete
-# add file download, download progress bar, dialog where save
-# add file upload, add pwd to upload path, upload progress bar
-# add file deletion, update file tree
-# fix login error
-# add top row with back, refetch, and home buttons
-# add dialog on delete, upload
-
-# fix performance issues on navigation back

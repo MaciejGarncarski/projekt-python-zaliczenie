@@ -18,6 +18,7 @@ from constants import (
     ftp_connection_errors,
     default_ftp_settings_description,
 )
+from dialog import NotificationBox, ConfirmationBox
 from ftp import ftp_client
 
 from labeled_input import LabeledInput
@@ -113,11 +114,8 @@ class LoginFTPWidget(QWidget):
         self.main_layout.addLayout(self.bottom_box)
 
     def login_ftp(self):
-        if self.error_message is not None:
-            self.error_message.setParent(None)
-
         try:
-            ftp_client.disconnect()
+            ftp_client.log_out()
             ftp_client.connect(
                 host=self.host.get_text(),
                 port=int(self.port.get_text()),
@@ -128,32 +126,35 @@ class LoginFTPWidget(QWidget):
             if self.save_login_data_checkbox.isChecked():
                 self.save_login_data()
 
+            notification_dialog = NotificationBox("Połączono z serwerem")
+            notification_dialog.show()
             self.parent().parent().start_server_ui()
 
         except all_errors as error:
+            self.parent().parent().setFixedSize(400, 400)
             error_message = str(error)
             try:
                 error_code = error_message[:3]
-                self.error_message = QLabel("Nie udało się połączyć z serwerem.")
-                self.error_message.setStyleSheet("color: red; font-weight: semi-bold;")
-                self.error_message.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
                 if ftp_connection_errors.get(error_code):
-                    self.error_message.setText(
-                        f"Błąd.\n{ftp_connection_errors.get(error_code)}"
+                    notification_dialog = NotificationBox(
+                    text=f"Błąd.\n{ftp_connection_errors.get(error_code)}",
+                    icon="error"
                     )
+                    notification_dialog.show()
                 else:
-                    self.error_message.setText(
-                        f"Nie udało się połączyć z serwerem.\nBłąd: {error_message}"
+                    notification_dialog = NotificationBox(
+                        text=f"Nie udało się połączyć z serwerem.\nBłąd: {error_message}",
+                        icon="error"
                     )
-
-                self.bottom_box.insertWidget(2, self.error_message)
+                    notification_dialog.show()
 
             except TypeError:
-                self.error_message.setText(
-                    f"Nie udało się połączyć z serwerem.\nBłąd: {error_message}"
+                notification_dialog = NotificationBox(
+                    text=f"Nie udało się połączyć z serwerem.\nBłąd: {error_message}",
+                    icon="error"
                 )
-                self.bottom_box.insertWidget(2, self.error_message)
+                notification_dialog.show()
 
     def init_login_data_dialog(self):
         dialog = SelectLoginInformation(self)
@@ -263,24 +264,7 @@ class LoginInformationItem(QWidget):
         self.setLayout(item_layout)
 
     def delete_item(self, itemId, host, port, user):
-        message_box = QMessageBox()
-        message_box.setIcon(QMessageBox.Warning)
-        message_box.setWindowTitle("Usuwanie danych połączenia")
-        message_box.setText(
-            f"Czy na pewno chcesz usunąć dane połączenia?\n{user}@{host}:{port}"
-        )
-        message_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-        button_yes = message_box.button(QMessageBox.Yes)
-        button_yes.setText("Usuń")
-        button_no = message_box.button(QMessageBox.No)
-        button_no.setText("Anuluj")
-
-        message_box.setDefaultButton(QMessageBox.No)
-
-        if message_box.clickedButton() == QMessageBox.No:
-            message_box.close()
-
-        if message_box.clickedButton() == QMessageBox.Yes:
+        def on_confirm():
             conn = sqlite3.connect("database.sqlite")
             cursor = conn.cursor()
             cursor.execute(
@@ -292,7 +276,12 @@ class LoginInformationItem(QWidget):
             conn.commit()
             self.parent().parent().findChild(QWidget, f"item-{itemId}").setParent(None)
 
-        message_box.exec_()
+        message_box = ConfirmationBox(
+            title="Usuwanie danych połączenia",
+            text=f"Czy na pewno chcesz usunąć dane połączenia?\n{user}@{host}:{port}",
+            on_confirm=on_confirm
+        )
+        message_box.show()
 
     def select_item(self, host=None, port=None, user=None, password=None):
         self.set_form_values(host, str(port), user, password)

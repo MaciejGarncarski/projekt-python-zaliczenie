@@ -1,3 +1,4 @@
+from ftplib import all_errors
 from pathlib import Path
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import (
@@ -50,14 +51,17 @@ class MainWindow(QMainWindow):
         self.central_widget.setCurrentWidget(self.login_ui)
 
     def start_server_ui(self):
-        self.setFixedSize(500, 500)
+        self.setFixedSize(600, 500)
         self.server_ui = ServerWidget(self)
         self.central_widget.addWidget(self.server_ui)
         self.central_widget.setCurrentWidget(self.server_ui)
 
 
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = MainWindow()
-    window.show()
-    sys.exit(app.exec_())
+    try:
+        app = QApplication(sys.argv)
+        window = MainWindow()
+        window.show()
+        sys.exit(app.exec_())
+    except all_errors as e:
+        ftp_client.reconnect(ftp)

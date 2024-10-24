@@ -1,22 +1,11 @@
-from PyQt5.QtCore import QTimer, QSize
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
-    QLabel,
-    QPushButton,
-    QFileDialog,
-    QProgressDialog,
-    QHBoxLayout,
-    QTreeWidget,
-    QTreeWidgetItem,
-    QHeaderView,
-)
 from pathlib import Path
 from os import path
+
+from PyQt5.QtCore import QSize
+from PyQt5.QtWidgets import QTreeWidget, QVBoxLayout, QHBoxLayout, QPushButton, QWidget, QProgressDialog, QLabel, \
+    QFileDialog, QStyledItemDelegate, QInputDialog
 from ftp import ftp_client
 from utils import is_directory, clear_tree_widget, defer_ui_change
-
 
 class ServerWidget(QWidget):
     def __init__(self, parent=None):
@@ -27,10 +16,10 @@ class ServerWidget(QWidget):
         self.file_tree_box = QTreeWidget()
         self.server_layout = QVBoxLayout()
 
-        self.file_tree_header = self.file_tree_box.header()
+        self.file_tree_box.setHeaderLabels(["Nazwa", "Rozmiar", "Data modyfikacji", "Akcje"])
         self.file_tree_box.setColumnWidth(0, 200)
-        self.file_tree_box.setColumnWidth(1, 130)
-        self.file_tree_box.setHeaderLabels(["Nazwa", "Rozmiar", "Data modyfikacji"])
+        self.file_tree_box.setColumnWidth(1, 90)
+        self.file_tree_box.setColumnWidth(2, 130)
 
         self.file_tree_box.setIconSize(QSize(24, 24))
         self.file_tree_box.itemDoubleClicked.connect(self.on_item_clicked)
@@ -45,13 +34,17 @@ class ServerWidget(QWidget):
         refresh_button.clicked.connect(lambda: self.show_file_tree('.'))
         toolbar_box.addWidget(refresh_button)
 
-        home_button = QPushButton("Strona główna")
-        home_button.clicked.connect(lambda: self.navigate('..'))
+        home_button = QPushButton("Początkowa ścieżka")
+        home_button.clicked.connect(lambda: self.navigate('/'))
         toolbar_box.addWidget(home_button)
+
+        create_dir_button = QPushButton("Utwórz katalog")
+        create_dir_button.clicked.connect(self.create_dir)
+        toolbar_box.addWidget(create_dir_button)
 
         # dolne przyciski
         button_box = QHBoxLayout()
-        self.logout_button = QPushButton("Wyloguj")
+        self.logout_button = QPushButton("Rozłącz")
         self.logout_button.clicked.connect(self.log_out)
         button_box.addWidget(self.logout_button)
         button_box.addWidget(self.upload_widget.upload_button)
@@ -64,29 +57,10 @@ class ServerWidget(QWidget):
 
         self.show_file_tree(".")
 
-    # def show_file_tree(self, directory="."):
-    #     def init_file_tree():
-    #         clear_tree_widget(self.file_tree_box)
-    #         self.file_tree_box.setHeaderLabels(["Nazwa", "Rozmiar", "Data modyfikacji"])
-    #         file_list = ftp_client.list_files(directory)
-    #
-    #
-    #         for file_name, file_size, file_date in file_list:
-    #             file_item = FileItemWidget(
-    #                 self.file_tree_box, file_name, file_size, file_date
-    #             )
-    #             self.file_tree_box.addTopLevelItem(file_item)
-    #
-    #     defer_ui_change(init_file_tree)
-
     def show_file_tree(self, directory="."):
         clear_tree_widget(self.file_tree_box)
-        file_list = ftp_client.list_files(directory)
-        for file_name, file_size, file_date in file_list:
-            file_item = FileItemWidget(
-                self.file_tree_box, file_name, file_size, file_date
-            )
-            self.file_tree_box.addTopLevelItem(file_item)
+        file_list = ftp_client.list_files(directory, self.file_tree_box)
+        self.file_tree_box.addTopLevelItems(file_list)
 
     def navigate_back(self):
         if self.current_path.directory_path != "/":
@@ -96,11 +70,16 @@ class ServerWidget(QWidget):
 
     def navigate(self, navigation_path):
         ftp_client.cwd(navigation_path)
-        self.show_file_tree(navigation_path)
+
+        if navigation_path == '/':
+            self.show_file_tree('.')
+        else:
+            self.show_file_tree(ftp_client.get_path())
+
         self.current_path.update_path()
 
     def log_out(self):
-        ftp_client.disconnect()
+        ftp_client.log_out()
         self.parent().parent().start_login_ui()
 
     def on_item_clicked(self, clicked_item, col):
@@ -108,25 +87,13 @@ class ServerWidget(QWidget):
             directory_path = clicked_item.text(0)
             self.navigate(self.current_path.directory_path + "/" + directory_path)
 
-class FileItemWidget(QTreeWidgetItem):
-    def __init__(self, parent=None, file_name=None, file_size=None, file_date=None):
-        super(QTreeWidgetItem, self).__init__(parent)
-        file_icon = QIcon("file.png")
-        folder_icon = QIcon("folder.png")
-        self.is_directory = False
-        self.setText(0, file_name)
-
-        # Jeżeli file_size == '-', jest to folder
-        if file_size == "-":
-            self.setIcon(0, folder_icon)
-            self.setText(1, "-")
-            self.setText(2, "-")
-            self.is_directory = True
-        else:
-            self.is_directory = False
-            self.setIcon(0, file_icon)
-            self.setText(1, file_size)
-            self.setText(2, file_date)
+    def create_dir(self):
+        directory_path = self.current_path.directory_path
+        new_directory_name = QInputDialog.getText(self, "Utwórz katalog", "Nazwa katalogu:")[0]
+        if new_directory_name:
+            formatted_path = "/" if directory_path == "/" else directory_path + "/"
+            ftp_client.create_dir(formatted_path + new_directory_name)
+            self.show_file_tree()
 
 
 class FileUploadWidget(QWidget):
@@ -169,7 +136,6 @@ class CurrentPath(QWidget):
         self.directory_path = ftp_client.get_path()
         self.current_path_label.setText(f"Aktualna ścieżka: {self.directory_path}")
 
-
 class ProgressBar(QProgressDialog):
     def __init__(self, file_size):
         super().__init__()
@@ -180,6 +146,7 @@ class ProgressBar(QProgressDialog):
         self.setWindowTitle("Przesyłanie...")
         self.setModal(True)
         self.setCancelButton(None)
+        self.setFixedSize(300, 150)
 
         self.setValue(0)
         self.setMinimum(0)
