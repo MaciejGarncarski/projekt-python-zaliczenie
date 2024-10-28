@@ -13,7 +13,7 @@
 ### Windows
 ```sh
 py -m venv .venv
-.venv\Scripts\activate.bat
+.\.venv\Scripts\activate.bat
 python -m pip install --upgrade pip
 py -m pip install PyQt5 
 ```
@@ -29,7 +29,7 @@ python3 -m pip install PyQt5
 ## 3. Uruchomienie aplikacji
 ### Windows
 ```sh
-.venv\Scripts\activate.bat
+.\.venv\Scripts\activate.bat
 py main.py
 ```
 

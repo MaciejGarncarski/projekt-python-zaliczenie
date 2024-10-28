@@ -1,7 +1,5 @@
-from ftplib import error_perm
 from math import floor, log, pow
 
-from PyQt5.QtCore import QTimer
 
 
 def delete_items_of_layout(layout):
@@ -21,7 +19,7 @@ def is_directory(ftp, name):
         ftp.cwd("..")
 
         return True
-    except:
+    except Exception:
         return False
 
 
@@ -39,7 +37,3 @@ def convert_size(size_bytes):
 def clear_tree_widget(tree_widget):
     while tree_widget.topLevelItemCount() > 0:
         tree_widget.takeTopLevelItem(0)
-
-
-def defer_ui_change(callback):
-    QTimer.singleShot(0, callback)

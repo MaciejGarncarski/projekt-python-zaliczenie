@@ -7,57 +7,57 @@ from PyQt5.QtWidgets import (
     QPushButton,
     QCheckBox,
     QHBoxLayout,
-    QDialog,
-    QScrollArea,
-    QMessageBox,
 )
 from PyQt5.QtCore import Qt
-from ftplib import FTP, all_errors
+from ftplib import all_errors
 from constants import (
     default_ftp_settings,
     ftp_connection_errors,
     default_ftp_settings_description,
 )
-from dialog import NotificationBox, ConfirmationBox
+from dialog import NotificationBox
 from ftp import ftp_client
 
 from labeled_input import LabeledInput
-from utils import delete_items_of_layout
+from select_login_info import SelectLoginInformation
 
 
 class LoginFTPWidget(QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, start_server_ui=None, main_window=None):
         super(LoginFTPWidget, self).__init__(parent)
-        self.main_layout = QVBoxLayout()
-        self.bottom_box = QVBoxLayout()
-        self.button_box = QHBoxLayout()
         self.save_login_data_checkbox = None
         self.host = None
         self.port = None
         self.user = None
         self.password = None
         self.error_message = None
+        self.start_server_ui = start_server_ui
+        self.main_window = main_window
 
         self.prepare_database()
-        self.setLayout(self.main_layout)
-
+        self.main_layout = QVBoxLayout()
+        self.bottom_box = QVBoxLayout()
+        self.button_box = QHBoxLayout()
         self.setWindowTitle("Połącz się z serwerem FTP")
-
         form_box = QFormLayout()
+        form_box.setContentsMargins(0, 0, 0, 10)
 
         self.host = LabeledInput(
             placeholder="Host",
             form_box=form_box,
             default_text=default_ftp_settings["host"],
         )
+
         self.port = LabeledInput(
             placeholder="Port", form_box=form_box, default_text="21"
         )
+
         self.user = LabeledInput(
             placeholder="Użytkownik",
             form_box=form_box,
             default_text=default_ftp_settings["user"],
         )
+
         self.password = LabeledInput(
             placeholder="Hasło",
             form_box=form_box,
@@ -65,10 +65,9 @@ class LoginFTPWidget(QWidget):
             default_text=default_ftp_settings["password"],
         )
 
-        form_box.setContentsMargins(0, 0, 0, 10)
         self.main_layout.addLayout(form_box)
-        self.init_bottom_ui()
         self.setLayout(self.main_layout)
+        self.init_bottom_ui()
 
     @staticmethod
     def prepare_database():
@@ -85,15 +84,14 @@ class LoginFTPWidget(QWidget):
         )
         """
         )
+        conn.close()
 
     def init_bottom_ui(self):
         self.save_login_data_checkbox = QCheckBox()
         self.save_login_data_checkbox.setText("Zapisz dane połączenia do bazy danych")
 
         default_settings_text = QLabel(default_ftp_settings_description)
-        default_settings_text.setTextInteractionFlags(
-            Qt.TextInteractionFlag.TextSelectableByMouse
-        )
+        default_settings_text.setTextInteractionFlags(Qt.TextSelectableByMouse)
 
         login_button = QPushButton("Połącz z serwerem")
         login_button.clicked.connect(self.login_ftp)
@@ -123,41 +121,46 @@ class LoginFTPWidget(QWidget):
                 password=self.password.get_text(),
             )
 
+            self.start_server_ui()
+
             if self.save_login_data_checkbox.isChecked():
                 self.save_login_data()
-
-            notification_dialog = NotificationBox("Połączono z serwerem")
-            notification_dialog.show()
-            self.parent().parent().start_server_ui()
+                notification_dialog = NotificationBox(
+                    "Połączono z serwerem i zapisano dane połączenia."
+                )
+                notification_dialog.show()
+            else:
+                notification_dialog = NotificationBox("Połączono z serwerem.")
+                notification_dialog.show()
 
         except all_errors as error:
-            self.parent().parent().setFixedSize(400, 400)
+            self.main_window.setFixedSize(400, 400)
             error_message = str(error)
             try:
-                error_code = error_message[:3]
+                error_code = int(error_message[:3])
 
                 if ftp_connection_errors.get(error_code):
                     notification_dialog = NotificationBox(
-                    text=f"Błąd.\n{ftp_connection_errors.get(error_code)}",
-                    icon="error"
+                        text=f"Błąd.\n{ftp_connection_errors.get(error_code)}",
+                        icon="error",
                     )
                     notification_dialog.show()
                 else:
                     notification_dialog = NotificationBox(
                         text=f"Nie udało się połączyć z serwerem.\nBłąd: {error_message}",
-                        icon="error"
+                        icon="error",
                     )
                     notification_dialog.show()
 
             except TypeError:
                 notification_dialog = NotificationBox(
                     text=f"Nie udało się połączyć z serwerem.\nBłąd: {error_message}",
-                    icon="error"
+                    icon="error",
                 )
                 notification_dialog.show()
 
     def init_login_data_dialog(self):
-        dialog = SelectLoginInformation(self)
+        dialog = SelectLoginInformation(self, set_form_values=self.set_form_values)
         dialog.exec()
 
     def set_form_values(self, host, port, user, password):
@@ -168,121 +171,21 @@ class LoginFTPWidget(QWidget):
 
     def save_login_data(self):
         conn = sqlite3.connect("database.sqlite")
-        cursor = conn.cursor()
-        cursor.execute(
-            """
-        INSERT INTO login_data (host, user, port, password) VALUES (?, ?, ?, ?)
-        """,
-            (
-                self.host.get_text(),
-                self.user.get_text(),
-                int(self.port.get_text()),
-                self.password.get_text(),
-            ),
-        )
-        conn.commit()
-
-
-class SelectLoginInformation(QDialog):
-    def __init__(self, ftp_widget):
-        super().__init__()
-        self.setWindowTitle("Wybierz dane połączenia")
-        self.setFixedSize(500, 300)
-        self.setObjectName("SelectLoginInformationDialog")
-        scroll_area = QScrollArea(self)
-        scroll_area.setWidgetResizable(True)
-
-        self.ftp_widget = ftp_widget
-
-        self.content_widget = QWidget()
-        self.content_layout = QVBoxLayout(self.content_widget)
-
-        self.conn = sqlite3.connect("database.sqlite")
-        self.cursor = self.conn.cursor()
-        self.fetched_items = None
-
-        self.create_items()
-
-        scroll_area.setWidget(self.content_widget)
-        dialog_layout = QVBoxLayout(self)
-        dialog_layout.addWidget(scroll_area)
-
-    def create_items(self):
-        delete_items_of_layout(self.content_layout)
-        conn = sqlite3.connect("database.sqlite")
-        cursor = conn.cursor()
-        cursor.execute(
-            """
-          SELECT itemId, host, user, port, password FROM login_data
-           """
-        )
-
-        self.fetched_items = cursor.fetchall()
-        for itemId, host, user, port, password in self.fetched_items:
-            login_data = (itemId, host, port, user, password)
-
-            login_data = LoginInformationItem(
-                login_data,
-                set_form_values=self.ftp_widget.set_form_values,
-                parent=self.content_widget,
-            )
-            self.content_layout.addWidget(login_data)
-        self.content_layout.addStretch()
-
-
-class LoginInformationItem(QWidget):
-    def __init__(
-        self,
-        login_data=None,
-        set_form_values=None,
-        parent=None,
-    ):
-        super().__init__(parent)
-        itemId, host, port, user, password = login_data
-        self.set_form_values = set_form_values
-        self.setObjectName(f"item-{itemId}")
-
-        item_layout = QHBoxLayout()
-        login_label = QLabel(f"{user}@{host}:{port}")
-        delete_button = QPushButton("Usuń")
-        select_button = QPushButton("Wybierz")
-
-        item_layout.addWidget(login_label)
-        item_layout.addWidget(delete_button)
-        item_layout.addWidget(select_button)
-
-        delete_button.setFixedWidth(50)
-        select_button.setFixedWidth(100)
-
-        delete_button.clicked.connect(
-            lambda: self.delete_item(itemId, host, port, user)
-        )
-        select_button.clicked.connect(
-            lambda: self.select_item(host, port, user, password)
-        )
-
-        self.setLayout(item_layout)
-
-    def delete_item(self, itemId, host, port, user):
-        def on_confirm():
-            conn = sqlite3.connect("database.sqlite")
+        try:
             cursor = conn.cursor()
             cursor.execute(
                 """
-            DELETE FROM login_data WHERE itemId = ?
+            INSERT INTO login_data (host, user, port, password) VALUES (?, ?, ?, ?)
             """,
-                (itemId,),
+                (
+                    self.host.get_text(),
+                    self.user.get_text(),
+                    int(self.port.get_text()),
+                    self.password.get_text(),
+                ),
             )
             conn.commit()
-            self.parent().parent().findChild(QWidget, f"item-{itemId}").setParent(None)
-
-        message_box = ConfirmationBox(
-            title="Usuwanie danych połączenia",
-            text=f"Czy na pewno chcesz usunąć dane połączenia?\n{user}@{host}:{port}",
-            on_confirm=on_confirm
-        )
-        message_box.show()
-
-    def select_item(self, host=None, port=None, user=None, password=None):
-        self.set_form_values(host, str(port), user, password)
-        self.parent().parent().parent().parent().close()
+        except sqlite3.Error as e:
+            print(f"Błąd bazy danych: {e}")
+        finally:
+            conn.close()

@@ -1,8 +1,17 @@
-from PyQt5.QtWidgets import QDialog, QPushButton, QDialogButtonBox, QVBoxLayout, QMessageBox
+from PyQt5.QtWidgets import QDialogButtonBox, QMessageBox
+
+from constants import icons
 
 
 class ConfirmationBox(QMessageBox):
-    def __init__(self, title="Potwierdź", text=None, button_yes_text="Potwierdź", button_no_text="Anuluj", on_confirm=None):
+    def __init__(
+        self,
+        title="Potwierdź",
+        text=None,
+        button_yes_text="Potwierdź",
+        button_no_text="Anuluj",
+        on_confirm=None,
+    ):
         super().__init__()
         self.setIcon(QMessageBox.Warning)
         self.setWindowTitle(title)
@@ -24,12 +33,6 @@ class ConfirmationBox(QMessageBox):
         if result == QMessageBox.Yes:
             self.on_confirm()
 
-icons = {
-    "info": QMessageBox.Information,
-    "warning": QMessageBox.Warning,
-    "error": QMessageBox.Critical,
-    "question": QMessageBox.Question,
-}
 
 class NotificationBox(QMessageBox):
     def __init__(self, text=None, icon="info"):

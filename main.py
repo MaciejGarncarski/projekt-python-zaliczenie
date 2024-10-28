@@ -1,14 +1,9 @@
-from ftplib import all_errors
 from pathlib import Path
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import (
     QApplication,
     QMainWindow,
     QStackedWidget,
-    QLayout,
-    QBoxLayout,
-    QVBoxLayout,
-    QPushButton,
 )
 
 import sys
@@ -16,10 +11,9 @@ import os
 import ctypes
 
 from constants import app_title
-from ftp import ReusableFTP, ftp_client
+from ftp import ftp_client
 from login import LoginFTPWidget
 from server import ServerWidget
-from utils import delete_items_of_layout
 
 # ustawia ikonkę aplikacji na systemie Windows,
 # poprzez ustawienie własnego identyfikatora aplikacji
@@ -46,22 +40,28 @@ class MainWindow(QMainWindow):
 
     def start_login_ui(self):
         self.setFixedSize(400, 400)
-        self.login_ui = LoginFTPWidget(self)
+        self.login_ui = LoginFTPWidget(
+            self, start_server_ui=self.start_server_ui, main_window=self
+        )
         self.central_widget.addWidget(self.login_ui)
         self.central_widget.setCurrentWidget(self.login_ui)
 
     def start_server_ui(self):
         self.setFixedSize(600, 500)
-        self.server_ui = ServerWidget(self)
+        self.server_ui = ServerWidget(self, start_login_ui=self.start_login_ui)
         self.central_widget.addWidget(self.server_ui)
         self.central_widget.setCurrentWidget(self.server_ui)
 
 
+def excepthook(exc_type, exc_value, exc_tb):
+    ftp_client.reconnect()
+    QtWidgets.QApplication.quit()
+
+
+sys.excepthook = excepthook
+
 if __name__ == "__main__":
-    try:
-        app = QApplication(sys.argv)
-        window = MainWindow()
-        window.show()
-        sys.exit(app.exec_())
-    except all_errors as e:
-        ftp_client.reconnect(ftp)
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec_())
