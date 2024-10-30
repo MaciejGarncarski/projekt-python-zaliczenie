@@ -37,6 +37,7 @@ class ServerWidget(QWidget):
         self.file_tree_box.setHeaderLabels(
             ["Nazwa", "Rozmiar", "Data modyfikacji", "Akcje"]
         )
+        self.file_tree_box.setIndentation(0 )
         self.file_tree_box.setColumnWidth(0, 200)
         self.file_tree_box.setColumnWidth(1, 90)
         self.file_tree_box.setColumnWidth(2, 130)
@@ -224,8 +225,8 @@ class ProgressBar(QProgressDialog):
 class FileItemWidget(QTreeWidgetItem):
     def __init__(self, parent=None, redraw_file_tree=None, file_data=("-", "-", "-")):
         super(QTreeWidgetItem, self).__init__(parent)
-        file_icon = QIcon("file.png")
-        folder_icon = QIcon("folder.png")
+        file_icon = QIcon("assets/file.png")
+        folder_icon = QIcon("assets/folder.png")
         button_box = QHBoxLayout()
         button_box.setContentsMargins(5, 5, 5, 5)
         button_widget = QWidget()
