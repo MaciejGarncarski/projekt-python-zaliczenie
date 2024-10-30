@@ -2,6 +2,7 @@ from datetime import datetime
 from pathlib import Path
 from os import path
 
+from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QSize
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (
@@ -16,6 +17,9 @@ from PyQt5.QtWidgets import (
     QInputDialog,
     QTreeWidgetItem,
 )
+
+from constants import dialog_width, dialog_height
+from dialog import NotificationBox, ConfirmationBox, InputDialog, ProgressDialog
 from ftp import ftp_client
 from utils import is_directory, clear_tree_widget, convert_size
 
@@ -27,7 +31,6 @@ class ServerWidget(QWidget):
         self.current_path = CurrentPath()
         self.upload_widget = FileUploadWidget(
             self,
-            current_path=self.current_path.directory_path,
             redraw_file_tree=self.redraw_file_tree,
         )
         self.start_login_ui = start_login_ui
@@ -37,7 +40,7 @@ class ServerWidget(QWidget):
         self.file_tree_box.setHeaderLabels(
             ["Nazwa", "Rozmiar", "Data modyfikacji", "Akcje"]
         )
-        self.file_tree_box.setIndentation(0 )
+        self.file_tree_box.setIndentation(0)
         self.file_tree_box.setColumnWidth(0, 200)
         self.file_tree_box.setColumnWidth(1, 90)
         self.file_tree_box.setColumnWidth(2, 130)
@@ -65,9 +68,18 @@ class ServerWidget(QWidget):
         # dolne przyciski
         button_box = QHBoxLayout()
         self.logout_button = QPushButton("Rozłącz")
-        self.logout_button.clicked.connect(self.log_out)
+        confirm_logout = ConfirmationBox(
+            button_no_text="Anuluj",
+            text="Czy na pewno chcesz się rozłączyć?",
+            button_yes_text="Rozłącz",
+            on_confirm=self.log_out,
+        )
+        self.logout_button.clicked.connect(lambda: confirm_logout.show())
         button_box.addWidget(self.logout_button)
         button_box.addWidget(self.upload_widget.upload_button)
+        self.upload_widget.upload_button.clicked.connect(
+            lambda: self.upload_widget.get_file(self.current_path.directory_path)
+        )
 
         self.server_layout = QVBoxLayout()
         self.server_layout.addWidget(self.current_path.current_path_label)
@@ -82,6 +94,14 @@ class ServerWidget(QWidget):
         clear_tree_widget(self.file_tree_box)
         files = ftp_client.list_files(directory)
         file_list = []
+
+        if len(files) == 0:
+            no_files_widget = NoFilesWidget(parent=self.file_tree_box)
+            file_list.append(no_files_widget)
+            self.file_tree_box.setItemWidget(no_files_widget, 0, no_files_widget.label)
+            self.file_tree_box.addTopLevelItems(file_list)
+            self.file_tree_box.setFirstItemColumnSpanned(no_files_widget, True)
+            return
 
         for file_name in files:
             formatted_file_name = (
@@ -142,49 +162,49 @@ class ServerWidget(QWidget):
 
     def create_dir(self):
         directory_path = self.current_path.directory_path
-        new_directory_name, ok = QInputDialog.getText(
-            self, "Utwórz katalog", "Nazwa katalogu:"
+
+        def on_accept():
+            new_directory_name = input_dialog.get_input()
+            if new_directory_name:
+                formatted_path = "/" if directory_path == "/" else directory_path + "/"
+                ftp_client.create_dir(formatted_path + new_directory_name)
+                self.redraw_file_tree()
+
+        input_dialog = InputDialog(
+            title="Utwórz katalog", input_title="Nazwa katalogu", on_confirm=on_accept
         )
-        if ok and new_directory_name:
-            formatted_path = "/" if directory_path == "/" else directory_path + "/"
-            ftp_client.create_dir(formatted_path + new_directory_name)
-            self.redraw_file_tree()
+        input_dialog.show()
 
 
 class FileUploadWidget(QWidget):
-    def __init__(self, parent=None, current_path=None, redraw_file_tree=None):
+    def __init__(self, parent=None, redraw_file_tree=None):
         super(FileUploadWidget, self).__init__(parent)
         self.upload_button = QPushButton("Prześlij plik")
-        self.upload_button.clicked.connect(self.get_file)
         self.select_file_dialog = None
-        self.file = None
-        self.current_path = current_path
+        self.file_path = None
         self.redraw_file_tree = redraw_file_tree
 
-    def get_file(self):
+    def get_file(self, current_path=None):
         self.select_file_dialog = QFileDialog()
         self.select_file_dialog.setFileMode(QFileDialog.FileMode.ExistingFiles)
         self.select_file_dialog.setViewMode(QFileDialog.Detail)
-        remote_path = (
-            self.current_path if self.current_path == "/" else self.current_path + "/"
-        )
+
+        remote_path = current_path if current_path == "/" else current_path + "/"
 
         if self.select_file_dialog.exec_():
             file_names = self.select_file_dialog.selectedFiles()
             if file_names:
-                self.file = str(Path(file_names[0]))
+                self.file_path = str(Path(file_names[0]))
                 self.upload_file(remote_path)
-                self.redraw_file_tree()
 
     def upload_file(self, remote_path):
-        file_size = path.getsize(self.file)
-        file_name = path.basename(self.file)
+        file_name = path.basename(self.file_path)
+        full_remote_path = remote_path + file_name
 
-        progress_dialog = ProgressBar(file_size)
-        ftp_client.upload_file(
-            self.file, remote_path + file_name, progress_dialog.handle
+        progress_dialog = ProgressDialog(
+            self.file_path, full_remote_path, ftp_client, self.redraw_file_tree
         )
-        progress_dialog.close()
+        progress_dialog.show()
 
 
 class CurrentPath(QWidget):
@@ -198,35 +218,31 @@ class CurrentPath(QWidget):
         self.current_path_label.setText(f"Aktualna ścieżka: {self.directory_path}")
 
 
-class ProgressBar(QProgressDialog):
-    def __init__(self, file_size):
-        super().__init__()
-        self.last_shown_percent = 0
-        self.size_written = 0
-        self.file_size = file_size
-        self.setMinimumDuration(0)
-        self.setWindowTitle("Przesyłanie...")
-        self.setModal(True)
-        self.setCancelButton(None)
-        self.setFixedSize(300, 150)
-
-        self.setValue(0)
-        self.setMinimum(0)
-        self.setMaximum(100)
-
-        self.show()
-
-    def handle(self, block):
-        self.size_written += len(block)
-        percent_complete = round((self.size_written / self.file_size) * 100)
-        self.setValue(percent_complete)
+class NoFilesWidget(QTreeWidgetItem):
+    def __init__(self, parent=None):
+        super(QTreeWidgetItem, self).__init__(parent)
+        self.label = QLabel("Brak plików.")
+        self.is_directory = False
+        self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.label.setStyleSheet(
+            """
+            font-size: 20px;
+            color: #888888;
+            font-weight: bold;
+            padding: 5px;
+            margin: 5px;
+            background-color: #f0f0f0;
+        """
+        )
 
 
 class FileItemWidget(QTreeWidgetItem):
     def __init__(self, parent=None, redraw_file_tree=None, file_data=("-", "-", "-")):
         super(QTreeWidgetItem, self).__init__(parent)
-        file_icon = QIcon("assets/file.png")
-        folder_icon = QIcon("assets/folder.png")
+        file_icon_path = path.join(path.dirname(__file__), r"assets\file.png")
+        folder_icon_path = path.join(path.dirname(__file__), r"assets\folder.png")
+        file_icon = QIcon(file_icon_path)
+        folder_icon = QIcon(folder_icon_path)
         button_box = QHBoxLayout()
         button_box.setContentsMargins(5, 5, 5, 5)
         button_widget = QWidget()

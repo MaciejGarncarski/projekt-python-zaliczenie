@@ -16,6 +16,9 @@ icons = {
     "question": QMessageBox.Question,
 }
 
+dialog_width = 300
+dialog_height = 100
+
 default_ftp_settings_description = f"""Testowy serwer FTP:
   - host: {default_ftp_settings["host"]}
   - port: {default_ftp_settings["port"]}

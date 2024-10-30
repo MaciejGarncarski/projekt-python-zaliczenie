@@ -1,5 +1,7 @@
 from PyQt5.QtWidgets import QWidget, QLineEdit, QLabel
 
+from constants import dialog_width, dialog_height
+
 
 class LabeledInput(QWidget):
     def __init__(
@@ -16,7 +18,7 @@ class LabeledInput(QWidget):
         self.label.setStyleSheet("padding-right: 10px")
         self.input_field = QLineEdit()
         self.input_field.setPlaceholderText(placeholder)
-        self.input_field.setMaximumSize(300, 100)
+        self.input_field.setMaximumSize(dialog_width, dialog_height)
 
         if is_password:
             self.input_field.setEchoMode(QLineEdit.EchoMode.Password)

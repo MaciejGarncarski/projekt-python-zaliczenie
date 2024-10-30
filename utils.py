@@ -1,7 +1,6 @@
 from math import floor, log, pow
 
 
-
 def delete_items_of_layout(layout):
     if layout is not None:
         while layout.count():

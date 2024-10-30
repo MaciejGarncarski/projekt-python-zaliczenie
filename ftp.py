@@ -1,5 +1,6 @@
 from ftplib import FTP, error_perm, error_temp, error_reply, error_proto
 import socket
+from os import path
 
 from PyQt5.QtWidgets import QFileDialog
 
@@ -85,16 +86,12 @@ class ReusableFTP:
     def upload_file(self, file_path, remote_path, callback):
         self.reconnect()
         with open(file_path, "rb") as file:
-            self.ftp.storbinary(f"STOR {remote_path}", file, 8192, callback)
-
-        upload_notification = NotificationBox(
-            text=f"Przesłano plik {file_path}", icon="info"
-        )
-        upload_notification.show()
+            self.ftp.storbinary(
+                f"STOR {path.basename(remote_path)}", file, 1024, callback
+            )
 
     def download_file(self, remote_path):
         self.reconnect()
-
         save_path, _ = QFileDialog.getSaveFileName(None, "Zapisz plik", remote_path)
 
         if save_path:
@@ -111,7 +108,12 @@ class ReusableFTP:
             self.reconnect()
             try:
                 self.ftp.delete(remote_path)
-            except Exception:
+                delete_notification = NotificationBox(
+                    text=f"Usunięto plik {remote_path}", icon="info"
+                )
+                delete_notification.show()
+            except Exception as e:
+                print(e)
                 error_notification = NotificationBox(
                     text="Usuwanie pliku nie powiodło się.", icon="error"
                 )
