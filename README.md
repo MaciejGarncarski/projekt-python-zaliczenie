@@ -39,6 +39,7 @@ python3 -m pip install PyQt5
 .\.venv\Scripts\activate.bat
 # lub
 .\.venv\Scripts\activate
+
 py main.py
 ```
 
@@ -54,6 +55,11 @@ Wymagane jest zainstalowanie biblioteki pyinstaller
 ### Windows
 ```sh
 py -m pip install pyinstaller
+
+.\.venv\Scripts\activate.bat
+# lub
+.\.venv\Scripts\activate
+
 pyinstaller main.spec
 ```
 Zbudowana aplikacja będzie znajdywać się w katalogu dist
