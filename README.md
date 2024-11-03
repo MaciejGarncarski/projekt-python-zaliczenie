@@ -4,6 +4,8 @@
 
 # Uruchamianie projektu
 
+##  Jeżeli używasz systemu Windows, możesz pominąć poniższe kroki i uruchomić zbudowany plik EXE. Należy pobrać plik "Projekt.FTP.Maciej.Garncarski.exe" z tego linku https://github.com/MaciejGarncarski/projekt-python-zaliczenie/releases/ 
+
 ## Podane komendy należy uruchomić w katalogu projektu.
 
 ## 1. Pobieranie plików projektu: https://codeload.github.com/MaciejGarncarski/projekt-python-zaliczenie/zip/refs/heads/master lub sklonowanie repozytorium git
@@ -28,9 +30,10 @@ python3 -m pip install PyQt5
 
 ## 3. Uruchomienie aplikacji
 ### Windows
-Poprzez uruchomienie pliku exe.
 ```sh
 .\.venv\Scripts\activate.bat
+# lub
+.\.venv\Scripts\activate
 py main.py
 ```
 
