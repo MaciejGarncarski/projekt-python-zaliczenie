@@ -357,7 +357,7 @@ class DownloadProgressDialog(QDialog):
             self.is_downloaded = True
             self.close()
             upload_notification = NotificationBox(
-                text=f"Pobrano plik\n{self.remote_path}\ndo folderu\n{self.save_path}",
+                text=f"Pobrano plik\n{self.remote_path}\ndo katalogu\n{self.save_path}",
             )
             upload_notification.show()
 

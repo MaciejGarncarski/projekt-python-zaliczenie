@@ -30,15 +30,14 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(app_title)
         pixmap = QPixmap()
 
+        # Ustawia bazowy katalog zależnie od tego, czy aplikacja jest uruchomiona jako plik wykonywalny
         if getattr(sys, "frozen", False):
-            # If it's an executable set the base directory to sys._MEIPASS
             base_directory = sys._MEIPASS
         else:
-            # Otherwise set it as the folder containing the main script
             base_directory = path.dirname(path.realpath("__file__"))
 
-        assets_folder = path.join(base_directory, "assets")
-        logo_path = path.join(assets_folder, "logo.png")
+        assets_dir = path.join(base_directory, "assets")
+        logo_path = path.join(assets_dir, "logo.png")
         pixmap.loadFromData(Path(logo_path).read_bytes())
         app_icon = QIcon(pixmap)
         self.setWindowIcon(app_icon)

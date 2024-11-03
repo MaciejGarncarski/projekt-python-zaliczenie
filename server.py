@@ -288,12 +288,12 @@ class FileItemWidget(QTreeWidgetItem):
     def __init__(self, parent=None, current_path=None, redraw_file_tree=None, file_data=("-", "-", "-")):
         super(QTreeWidgetItem, self).__init__(parent)
         file_icon_path = path.join(path.dirname(__file__), r"assets\file.png")
-        folder_icon_path = path.join(path.dirname(__file__), r"assets\folder.png")
+        directory_icon_path = path.join(path.dirname(__file__), r"assets\directory.png")
         self.current_path = current_path
         self.redraw_file_tree = redraw_file_tree
 
         file_icon = QIcon(file_icon_path)
-        folder_icon = QIcon(folder_icon_path)
+        directory_icon = QIcon(directory_icon_path)
         button_box = QHBoxLayout()
         button_box.setContentsMargins(5, 5, 5, 5)
         button_widget = QWidget()
@@ -314,9 +314,9 @@ class FileItemWidget(QTreeWidgetItem):
         self.is_directory = False
         self.setText(0, self.file_name)
 
-        # Jeżeli file_size == "-", jest to folder
+        # Jeżeli file_size == "-", jest to katalog
         if self.file_size == "-":
-            self.setIcon(0, folder_icon)
+            self.setIcon(0, directory_icon)
             self.setText(1, "-")
             self.setText(2, "-")
             button_box.addWidget(button_rename_dir)
