@@ -8,15 +8,24 @@
 
 # Uruchamianie projektu
 
-### Na systemie Windows można uruchomić zbudowany plik EXE. Należy pobrać plik "Projekt.FTP.Maciej.Garncarski.exe" z tego [linku](https://github.com/MaciejGarncarski/projekt-python-zaliczenie/releases/).<br/>[Instrukcja budowania exe aplikacji](#4-budowanie-exe-opcjonalne)
+### Na systemie Windows 10 i Widnows 11 można uruchomić zbudowany plik exe. Należy pobrać plik `Projekt.FTP.Maciej.Garncarski.exe` z tego [linku](https://github.com/MaciejGarncarski/projekt-python-zaliczenie/releases/).
+
+[Instrukcja budowania exe aplikacji](#4-budowanie-exe-opcjonalne)
+
+[Znane problemy](#5-znane-problemy)
 
 ---
 
-### Podane komendy należy uruchomić w katalogu projektu.
+## 1. Pobieranie plików projektu
+Pobierz [plik zip](https://codeload.github.com/MaciejGarncarski/projekt-python-zaliczenie/zip/refs/heads/master) lub sklonuj repozytorium git:
 
-## 1. Pobieranie [plików projektu](https://codeload.github.com/MaciejGarncarski/projekt-python-zaliczenie/zip/refs/heads/master) lub sklonowanie repozytorium git
+```sh
+git clone https://github.com/MaciejGarncarski/projekt-python-zaliczenie.git
+cd projekt-python-zaliczenie
+```
 
 ## 2. Instalacja biblioteki do GUI i aktywacja środowiska wirtualnego
+### Podane komendy należy uruchomić w katalogu projektu.
 
 ### Windows
 ```sh
@@ -52,7 +61,7 @@ python3 main.py
 
 
 ## 4. Budowanie exe (opcjonalne)
-Wymagane jest zainstalowanie biblioteki pyinstaller
+Wymagane jest zainstalowanie biblioteki `pyinstaller`
 ### Windows
 ```sh
 py -m pip install pyinstaller
@@ -63,4 +72,9 @@ py -m pip install pyinstaller
 
 pyinstaller main.spec
 ```
-Zbudowana aplikacja będzie znajdywać się w katalogu dist
+Zbudowana aplikacja będzie znajdywać się w katalogu `dist`
+
+### 5. Znane problemy
+- Przestarzałe wersje `pip` mogą powodować błędy przy instalacji PyQt5, zalecane jest zaktualizowanie `pip`
+- W programie VirtualBox aplikacja zawiesza się, gdy wybrany jest typ sieci NAT, wybranie trybu Bridge lub Host-Only powinno rozwiązać problem
+- Plik exe zbudowany na systemie Windows 10 i Windows 11 nie działa na Windows 7
