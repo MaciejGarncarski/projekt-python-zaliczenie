@@ -8,7 +8,7 @@
 
 # Uruchamianie projektu
 
-### Na systemie Windows 10 i Widnows 11 można uruchomić zbudowany plik exe. Należy pobrać plik `Projekt.FTP.Maciej.Garncarski.exe` z tego [linku](https://github.com/MaciejGarncarski/projekt-python-zaliczenie/releases/).
+### Na systemie Windows można uruchomić gotowy plik exe. Należy pobrać plik `Projekt.FTP.Maciej.Garncarski.exe` z tego [linku](https://github.com/MaciejGarncarski/projekt-python-zaliczenie/releases/).
 
 [Instrukcja budowania exe aplikacji](#4-budowanie-exe-opcjonalne)
 
