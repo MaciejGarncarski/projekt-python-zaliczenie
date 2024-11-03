@@ -2,6 +2,11 @@
 
 ---
 
+# Autor: Maciej Garncarski
+# Indeks: 181846
+
+---
+
 # Uruchamianie projektu
 
 ##  Jeżeli używasz systemu Windows, możesz pominąć poniższe kroki i uruchomić zbudowany plik EXE. Należy pobrać plik "Projekt.FTP.Maciej.Garncarski.exe" z tego linku https://github.com/MaciejGarncarski/projekt-python-zaliczenie/releases/ 
