@@ -117,6 +117,7 @@ class ServerWidget(QWidget):
                 file_list.append(
                     FileItemWidget(
                         parent=self.file_tree_box,
+                        current_path=self.current_path.directory_path,
                         redraw_file_tree=self.redraw_file_tree,
                         file_data=file_data,
                     )
@@ -130,6 +131,7 @@ class ServerWidget(QWidget):
             file_data = (formatted_file_name, file_formatted_size, modified_time)
             file_item = FileItemWidget(
                 parent=self.file_tree_box,
+                current_path=self.current_path.directory_path,
                 redraw_file_tree=self.redraw_file_tree,
                 file_data=file_data,
             )
@@ -283,10 +285,13 @@ class NoFilesWidget(QTreeWidgetItem):
 
 
 class FileItemWidget(QTreeWidgetItem):
-    def __init__(self, parent=None, redraw_file_tree=None, file_data=("-", "-", "-")):
+    def __init__(self, parent=None, current_path=None, redraw_file_tree=None, file_data=("-", "-", "-")):
         super(QTreeWidgetItem, self).__init__(parent)
         file_icon_path = path.join(path.dirname(__file__), r"assets\file.png")
         folder_icon_path = path.join(path.dirname(__file__), r"assets\folder.png")
+        self.current_path = current_path
+        self.redraw_file_tree = redraw_file_tree
+
         file_icon = QIcon(file_icon_path)
         folder_icon = QIcon(folder_icon_path)
         button_box = QHBoxLayout()
@@ -294,6 +299,9 @@ class FileItemWidget(QTreeWidgetItem):
         button_widget = QWidget()
         button_delete = QPushButton("Usuń")
         button_download = QPushButton("Pobierz")
+        button_rename_dir = QPushButton("Zmień nazwę")
+
+
         button_box.addWidget(button_delete)
         button_delete.clicked.connect(self.handle_delete)
         button_widget.setLayout(button_box)
@@ -306,13 +314,14 @@ class FileItemWidget(QTreeWidgetItem):
         self.is_directory = False
         self.setText(0, self.file_name)
 
-        self.redraw_file_tree = redraw_file_tree
-
         # Jeżeli file_size == "-", jest to folder
         if self.file_size == "-":
             self.setIcon(0, folder_icon)
             self.setText(1, "-")
             self.setText(2, "-")
+            button_box.addWidget(button_rename_dir)
+            button_rename_dir.clicked.connect(self.rename_directory)
+
             self.is_directory = True
 
         else:
@@ -332,3 +341,33 @@ class FileItemWidget(QTreeWidgetItem):
             ftp_client.delete_file(self.file_name)
 
         self.redraw_file_tree()
+
+    def rename_directory(self):
+        try:
+            def rename_dir():
+                formatted_path = "/" if self.current_path == "/" else self.current_path + "/"
+                old_name = formatted_path + self.file_name
+                new_dir_name = rename_dialog.get_input()
+                new_name = formatted_path + new_dir_name or self.file_name
+                ftp_client.ftp.rename(old_name, new_name)
+                self.redraw_file_tree()
+                rename_notification = NotificationBox(
+                    text=f"Katalog {old_name} zmieniono na {new_name}",
+                    icon="info",
+                )
+                rename_notification.show()
+
+            rename_dialog = InputDialog(
+                title="Zmień nazwę katalogu",
+                input_title="Nowa nazwa katalogu",
+                on_confirm=rename_dir,
+                default_value=self.file_name,
+            )
+
+            rename_dialog.show()
+        except Exception as e:
+            error_notification = NotificationBox(
+                text=f"Nie udało się zmienić nazwy katalogu: {e}",
+                icon="error",
+            )
+            error_notification.show()

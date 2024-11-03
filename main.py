@@ -70,8 +70,8 @@ class MainWindow(QMainWindow):
         self.central_widget.setCurrentWidget(self.login_ui)
 
     def start_server_ui(self):
-        self.setMinimumSize(600, 500)
-        self.setMaximumSize(1200, 1000)
+        self.setMinimumSize(650, 500)
+        self.setMaximumSize(1300, 1000)
         self.server_ui = ServerWidget(self, start_login_ui=self.start_login_ui)
         self.central_widget.addWidget(self.server_ui)
         self.central_widget.setCurrentWidget(self.server_ui)
