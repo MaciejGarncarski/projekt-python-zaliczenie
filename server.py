@@ -20,7 +20,7 @@ from dialog import (
     ConfirmationBox,
     InputDialog,
     UploadProgressDialog,
-    DownloadProgressDialog,
+    DownloadProgressDialog, NotificationBox,
 )
 from ftp import ftp_client
 from utils import is_directory, clear_tree_widget, convert_size
@@ -161,6 +161,36 @@ class ServerWidget(QWidget):
         if clicked_item.is_directory:
             directory_path = clicked_item.text(0)
             self.navigate(self.current_path.directory_path + "/" + directory_path)
+        else:
+            try:
+                def rename_file():
+                    formatted_path = "/" if self.current_path.directory_path == "/" else self.current_path.directory_path + "/"
+                    old_name = formatted_path + clicked_item.text(0)
+                    new_file_name = rename_dialog.get_input()
+                    new_name = formatted_path + new_file_name or clicked_item.text(0)
+                    ftp_client.ftp.rename(old_name, new_name)
+                    self.redraw_file_tree()
+                    rename_notification = NotificationBox(
+                        text=f"Plik {old_name} zmieniono na {new_name}",
+                        icon="info",
+                    )
+                    rename_notification.show()
+
+
+                rename_dialog = InputDialog(
+                    title="Zmień nazwę pliku",
+                    input_title="Nowa nazwa pliku",
+                    on_confirm=rename_file,
+                    default_value=clicked_item.text(0),
+                )
+
+                rename_dialog.show()
+            except Exception as e:
+                error_notification = NotificationBox(
+                    text=f"Nie udało się zmienić nazwy pliku: {e}",
+                    icon="error",
+                )
+                error_notification.show()
 
     def create_dir(self):
         directory_path = self.current_path.directory_path

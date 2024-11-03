@@ -84,7 +84,7 @@ class NotificationBox(QMessageBox):
 
 class InputDialog(QDialog):
     def __init__(
-        self, title="Wprowadź dane", input_title="Wprowadź dane", on_confirm=None
+        self, title="Wprowadź dane", input_title="Wprowadź dane", on_confirm=None, default_value=""
     ):
         super().__init__()
         logo_path = path.join(path.dirname(__file__), r"assets\logo.png")
@@ -96,7 +96,7 @@ class InputDialog(QDialog):
         form_widget = QWidget()
         form_box = QFormLayout()
         self.setLayout(form_box)
-        self.input = LabeledInput(input_title, form_box=form_box)
+        self.input = LabeledInput(input_title, form_box=form_box, default_text=default_value)
         form_box.addWidget(self.input)
         form_widget.setLayout(form_box)
         main_layout = QVBoxLayout()
