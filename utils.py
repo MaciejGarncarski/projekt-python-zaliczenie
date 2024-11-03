@@ -39,13 +39,13 @@ def convert_time(seconds):
         remaining_seconds = seconds % 3600
         minutes = remaining_seconds // 60
 
-        return f"{hours} godzin, {minutes} minut i {remaining_seconds % 60} sekund"
+        return f"{hours} godzin(y), {minutes} minut(y) i {remaining_seconds % 60} sekund(y)"
     elif seconds >= 60:
         minutes = seconds // 60
         remaining_seconds = seconds % 60
-        return f"{minutes} minut i {remaining_seconds} sekund"
+        return f"{minutes} minut(y) i {remaining_seconds} sekund(y)"
     else:
-        return f"{seconds} sekund"
+        return f"{seconds} sekund(y)"
 
 
 def clear_tree_widget(tree_widget):

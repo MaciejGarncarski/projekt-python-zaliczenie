@@ -74,7 +74,7 @@ pyinstaller main.spec
 ```
 Zbudowana aplikacja będzie znajdywać się w katalogu `dist`
 
-### 5. Znane problemy
+## 5. Znane problemy
 - Przestarzałe wersje `pip` mogą powodować błędy przy instalacji PyQt5, zalecane jest zaktualizowanie `pip`
-- W programie VirtualBox aplikacja zawiesza się, gdy wybrany jest typ sieci NAT, wybranie trybu Bridge lub Host-Only powinno rozwiązać problem
+- W programie VirtualBox aplikacja zawiesza się, gdy wybrany jest typ sieci NAT, wybranie trybu Bridge powinno rozwiązać problem
 - Plik exe zbudowany na systemie Windows 10 i Windows 11 nie działa na Windows 7

@@ -129,6 +129,7 @@ class InputDialog(QDialog):
 
 class UploadThread(QThread):
     progress = pyqtSignal(int)
+    remaining_size = pyqtSignal(int)
     speed_changed = pyqtSignal(float)
     time_remaining = pyqtSignal(int)
 
@@ -155,6 +156,7 @@ class UploadThread(QThread):
             time_left = remaining_bytes / speed if speed > 0 else 0
             self.speed_changed.emit(speed)
             self.time_remaining.emit(int(time_left))
+            self.remaining_size.emit(remaining_bytes)
 
         self.ftp_client.upload_file(self.file_path, self.remote_path, handle_block)
 
@@ -185,11 +187,13 @@ class UploadProgressDialog(QDialog):
         self.progress_bar.setValue(0)
         self.cancel_button = QPushButton("Anuluj")
         self.cancel_button.clicked.connect(self.cancel_upload)
-        self.speed_label = QLabel("Prędkość wysyłania: 0 MB/s")
-        self.time_remained_label = QLabel("Pozostały czas: 0s")
+        self.remaining_size_label = QLabel("Pozostało: 0")
+        self.speed_label = QLabel("Prędkość wysyłania: 0")
+        self.time_remained_label = QLabel("Pozostały czas: 0")
 
         layout.addWidget(self.label)
         layout.addWidget(self.progress_bar)
+        layout.addWidget(self.remaining_size_label)
         layout.addWidget(self.speed_label)
         layout.addWidget(self.time_remained_label)
 
@@ -200,6 +204,7 @@ class UploadProgressDialog(QDialog):
 
         self.upload_thread = UploadThread(file_path, self.remote_path, self.ftp_client)
         self.upload_thread.progress.connect(self.update_progress)
+        self.upload_thread.remaining_size.connect(self.update_size)
         self.upload_thread.speed_changed.connect(self.update_speed)
         self.upload_thread.time_remaining.connect(self.update_time)
         self.upload_thread.start()
@@ -220,6 +225,9 @@ class UploadProgressDialog(QDialog):
             )
             upload_notification.show()
             self.redraw_file_tree()
+
+    def update_size(self, size):
+        self.remaining_size_label.setText(f"Pozostało: {convert_size(size)}")
 
     def update_speed(self, speed):
         self.speed_label.setText(f"Prędkość pobierania: {convert_size(speed)}/s")
@@ -255,6 +263,7 @@ class UploadProgressDialog(QDialog):
 
 class DownloadThread(QThread):
     progress = pyqtSignal(int)
+    remaining_size = pyqtSignal(int)
     speed_changed = pyqtSignal(float)
     time_remaining = pyqtSignal(int)
 
@@ -279,6 +288,7 @@ class DownloadThread(QThread):
             remaining_bytes = file_size - download_size
             time_left = remaining_bytes / speed if speed > 0 else 0
             self.progress.emit(progress)
+            self.remaining_size.emit(remaining_bytes)
             self.speed_changed.emit(speed)
             self.time_remaining.emit(int(time_left))
 
@@ -309,11 +319,13 @@ class DownloadProgressDialog(QDialog):
         self.progress_bar.setValue(0)
         self.cancel_button = QPushButton("Anuluj")
         self.cancel_button.clicked.connect(self.cancel_download)
-        self.speed_label = QLabel("Prędkość pobierania: 0 MB/s")
-        self.time_remaining_label = QLabel("Pozostały czas: 0s")
+        self.speed_label = QLabel("Prędkość pobierania: 0")
+        self.remaining_size_label = QLabel("Pozostało: 0")
+        self.time_remaining_label = QLabel("Pozostały czas: 0")
 
         layout.addWidget(self.label)
         layout.addWidget(self.progress_bar)
+        layout.addWidget(self.remaining_size_label)
         layout.addWidget(self.speed_label)
         layout.addWidget(self.time_remaining_label)
 
@@ -333,6 +345,7 @@ class DownloadProgressDialog(QDialog):
                 self.save_path, self.remote_path, self.ftp_client
             )
             self.download_thread.progress.connect(self.update_progress)
+            self.download_thread.remaining_size.connect(self.update_size)
             self.download_thread.speed_changed.connect(self.update_speed)
             self.download_thread.time_remaining.connect(self.update_time_remaining)
             self.download_thread.start()
@@ -347,6 +360,9 @@ class DownloadProgressDialog(QDialog):
                 text=f"Pobrano plik\n{self.remote_path}\ndo folderu\n{self.save_path}",
             )
             upload_notification.show()
+
+    def update_size(self, size):
+        self.remaining_size_label.setText(f"Pozostało: {convert_size(size)}")
 
     def update_speed(self, speed):
         self.speed_label.setText(f"Prędkość pobierania: {convert_size(speed)}/s")
