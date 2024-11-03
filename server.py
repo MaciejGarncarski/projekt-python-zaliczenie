@@ -144,18 +144,32 @@ class ServerWidget(QWidget):
             self.redraw_file_tree()
 
     def navigate(self, navigation_path):
-        ftp_client.cwd(navigation_path)
+        try:
+            ftp_client.cwd(navigation_path)
+            if navigation_path == "/":
+                self.redraw_file_tree()
+            else:
+                self.redraw_file_tree(ftp_client.get_path())
 
-        if navigation_path == "/":
-            self.redraw_file_tree()
-        else:
-            self.redraw_file_tree(ftp_client.get_path())
+            self.current_path.update_path()
 
-        self.current_path.update_path()
+        except Exception as e:
+            error_notification = NotificationBox(
+                text=f"Nie udało się przejść do katalogu: {e}",
+                icon="error",
+            )
+            error_notification.show()
 
     def log_out(self):
-        ftp_client.log_out()
-        self.start_login_ui()
+        try:
+            ftp_client.log_out()
+            self.start_login_ui()
+        except Exception as e:
+            error_notification = NotificationBox(
+                text=f"Nie udało się rozłączyć: {e}",
+                icon="error",
+            )
+            error_notification.show()
 
     def on_item_clicked(self, clicked_item):
         if clicked_item.is_directory:

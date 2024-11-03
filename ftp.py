@@ -52,7 +52,7 @@ class ReusableFTP:
                 text=f"Stworzono katalog {remote_path}", icon="info"
             )
             create_dir_notification.show()
-        except error_perm:
+        except Exception as e:
             error_notification = NotificationBox(
                 text=f"Nie udało się utworzyć katalogu {remote_path}.", icon="error"
             )
