@@ -28,6 +28,7 @@ python3 -m pip install PyQt5
 
 ## 3. Uruchomienie aplikacji
 ### Windows
+Poprzez uruchomienie pliku exe.
 ```sh
 .\.venv\Scripts\activate.bat
 py main.py
@@ -38,3 +39,13 @@ py main.py
 source .venv/bin/activate
 python3 main.py
 ```
+
+
+## 4. Budowanie exe (opcjonalne)
+Wymagane jest zainstalowanie biblioteki pyinstaller
+### Windows
+```sh
+py -m pip install pyinstaller
+pyinstaller main.spec
+```
+Zbudowana aplikacja będzie znajdywać się w katalogu dist

@@ -11,15 +11,17 @@ from PyQt5.QtWidgets import (
     QHBoxLayout,
     QPushButton,
     QWidget,
-    QProgressDialog,
     QLabel,
     QFileDialog,
-    QInputDialog,
     QTreeWidgetItem,
 )
 
-from constants import dialog_width, dialog_height
-from dialog import NotificationBox, ConfirmationBox, InputDialog, ProgressDialog
+from dialog import (
+    ConfirmationBox,
+    InputDialog,
+    UploadProgressDialog,
+    DownloadProgressDialog,
+)
 from ftp import ftp_client
 from utils import is_directory, clear_tree_widget, convert_size
 
@@ -201,7 +203,7 @@ class FileUploadWidget(QWidget):
         file_name = path.basename(self.file_path)
         full_remote_path = remote_path + file_name
 
-        progress_dialog = ProgressDialog(
+        progress_dialog = UploadProgressDialog(
             self.file_path, full_remote_path, ftp_client, self.redraw_file_tree
         )
         progress_dialog.show()
@@ -274,9 +276,9 @@ class FileItemWidget(QTreeWidgetItem):
             self.setText(1, self.file_size)
             self.setText(2, self.file_date)
             button_box.addWidget(button_download)
-            button_download.clicked.connect(
-                lambda: ftp_client.download_file(self.file_name)
-            )
+            download_dialog = DownloadProgressDialog(self.file_name, ftp_client)
+            button_download.clicked.connect(lambda: download_dialog.show())
+
             self.is_directory = False
 
     def handle_delete(self):

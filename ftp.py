@@ -2,8 +2,6 @@ from ftplib import FTP, error_perm, error_temp, error_reply, error_proto
 import socket
 from os import path
 
-from PyQt5.QtWidgets import QFileDialog
-
 from dialog import NotificationBox, ConfirmationBox
 
 
@@ -90,18 +88,16 @@ class ReusableFTP:
                 f"STOR {path.basename(remote_path)}", file, 1024, callback
             )
 
-    def download_file(self, remote_path):
+    def download_file(self, local_path, remote_path, callback):
         self.reconnect()
-        save_path, _ = QFileDialog.getSaveFileName(None, "Zapisz plik", remote_path)
 
-        if save_path:
-            with open(save_path, "wb") as local_file:
-                self.ftp.retrbinary(f"RETR {remote_path}", local_file.write)
-                download_notification = NotificationBox(
-                    text=f"Pobrano plik {remote_path} do folderu {save_path}",
-                    icon="info",
-                )
-                download_notification.show()
+        with open(local_path, "wb") as local_file:
+
+            def download_callback(data):
+                local_file.write(data)
+                callback(data)
+
+            self.ftp.retrbinary(f"RETR {remote_path}", download_callback)
 
     def delete_file(self, remote_path):
         def delete():
