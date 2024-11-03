@@ -2,18 +2,19 @@
 
 ---
 
-# Autor: Maciej Garncarski
-# Indeks: 181846
+# Autor: Maciej Garncarski, indeks: 181846
 
 ---
 
 # Uruchamianie projektu
 
-##  Jeżeli używasz systemu Windows, możesz pominąć poniższe kroki i uruchomić zbudowany plik EXE. Należy pobrać plik "Projekt.FTP.Maciej.Garncarski.exe" z tego linku https://github.com/MaciejGarncarski/projekt-python-zaliczenie/releases/ 
+### Na systemie Windows można uruchomić zbudowany plik EXE. Należy pobrać plik "Projekt.FTP.Maciej.Garncarski.exe" z tego [linku](https://github.com/MaciejGarncarski/projekt-python-zaliczenie/releases/).<br/>[Instrukcja budowania exe aplikacji](#4-budowanie-exe-opcjonalne)
 
-## Podane komendy należy uruchomić w katalogu projektu.
+---
 
-## 1. Pobieranie plików projektu: https://codeload.github.com/MaciejGarncarski/projekt-python-zaliczenie/zip/refs/heads/master lub sklonowanie repozytorium git
+### Podane komendy należy uruchomić w katalogu projektu.
+
+## 1. Pobieranie [plików projektu](https://codeload.github.com/MaciejGarncarski/projekt-python-zaliczenie/zip/refs/heads/master) lub sklonowanie repozytorium git
 
 ## 2. Instalacja biblioteki do GUI i aktywacja środowiska wirtualnego
 
