@@ -230,7 +230,7 @@ class UploadProgressDialog(QDialog):
         self.remaining_size_label.setText(f"Pozostało: {convert_size(size)}")
 
     def update_speed(self, speed):
-        self.speed_label.setText(f"Prędkość pobierania: {convert_size(speed)}/s")
+        self.speed_label.setText(f"Prędkość wysyłania: {convert_size(speed)}/s")
 
     def update_time(self, time):
         self.time_remained_label.setText(f"Pozostały czas: {convert_time(time)}")
