@@ -30,6 +30,8 @@ cd projekt-python-zaliczenie
 ### Windows
 ```sh
 py -m venv .venv
+.\.venv\Scripts\activate
+# lub
 .\.venv\Scripts\activate.bat
 python -m pip install --upgrade pip
 py -m pip install PyQt5 
@@ -46,9 +48,9 @@ python3 -m pip install PyQt5
 ## 3. Uruchomienie aplikacji
 ### Windows
 ```sh
-.\.venv\Scripts\activate.bat
-# lub
 .\.venv\Scripts\activate
+# lub
+.\.venv\Scripts\activate.bat
 
 py main.py
 ```
@@ -66,9 +68,9 @@ Wymagane jest zainstalowanie biblioteki `pyinstaller`
 ```sh
 py -m pip install pyinstaller
 
-.\.venv\Scripts\activate.bat
-# lub
 .\.venv\Scripts\activate
+# lub
+.\.venv\Scripts\activate.bat
 
 pyinstaller main.spec
 ```
