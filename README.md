@@ -4,6 +4,11 @@
 
 # Autor: Maciej Garncarski, indeks: 181846
 
+<img width="192" height="192" src="https://raw.githubusercontent.com/MaciejGarncarski/projekt-python-zaliczenie/master/.github/login.png">
+<br />
+<img width="192" height="192" src="https://raw.githubusercontent.com/MaciejGarncarski/projekt-python-zaliczenie/master/.github/server.png">
+
+
 ---
 
 # Uruchamianie projektu

@@ -93,6 +93,7 @@ class ServerWidget(QWidget):
         self.redraw_file_tree()
 
     def redraw_file_tree(self, directory="."):
+        ftp_client.reconnect()
         clear_tree_widget(self.file_tree_box)
         files = ftp_client.list_files(directory)
         file_list = []
